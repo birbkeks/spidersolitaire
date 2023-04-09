@@ -1,0 +1,44 @@
+<html>
+<body>
+	<div style="position: fixed; " id="dom_dialog_box">
+		
+
+
+	</div>
+	<img src="./img/cardDeck.svg" onload="llll(this)">
+	<canvas id="cv"></canvas>
+	<canvas id="ncv"></canvas>
+</body>
+<script type="text/javascript">
+	function llll(img){
+		cv.getContext("2d").drawImage(img,0,0);
+		ncv.getContext("2d").drawImage(cv,0,0);
+	}
+	window.onresize = function(){
+		console.log("resizing");
+	}
+	nextDialog();
+	function dialogBox(){
+		return new Promise(
+			(r)=>{
+				dom_dialog_box.style.display = "";
+				dom_dialog_box.innerHTML = '';
+				let btnok = document.createElement("button");
+				btnok.innerHTML = "OK";
+				btnok.onclick = function(){
+					r(1);
+					dom_dialog_box.style.display = "none";
+				}
+				dom_dialog_box.appendChild(btnok);
+			}
+			);
+	}
+	async function nextDialog(){
+		let res = await dialogBox();
+		console.log(res);
+	}
+
+
+
+</script>
+</html>

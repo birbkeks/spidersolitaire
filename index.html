@@ -1,0 +1,157 @@
+<html>
+<link rel="stylesheet" href="./css/style.css">
+<script >
+let globalArrOfGameList = [];
+let globalIndexSelector = 0;
+let globalUI = null;
+</script>
+
+<body>
+<div class="screenClass"  style="display:block;">
+	<fieldset class="bgTheme1"><legend> Select Game </legend>
+		<table width="100%" height="90%">
+			<tr>
+				<td id="domListElement" style="width:50%;" class="borderRound scroller bgTheme2" rowspan="3">
+					<button class="itemSelector borderRound bgTheme3" >
+					</button>
+
+
+				</td>
+				<td class="borderRound bgTheme2" style="height: 25%">
+					<h1 style="padding-left: 50px; color:white;" id="dom_game_title"> </h1>
+
+				</td>
+			</tr>
+			<tr>
+				<td id="gameSetting" style="" class="borderRound bgTheme2 scroller inputholder"></td>
+				
+			</tr>
+			<tr style="height:15%;"> 
+				<td class="borderRound bgTheme2 inputholder"> <button id="domNewGameBtn"  disabled="true" onclick="loadProcedure();"> New Game </button></td>
+			</tr>
+
+		</table>
+
+	</fieldset>
+
+
+</div>
+
+<div class="screenClass" >
+
+<div class="navbar">
+	<button onclick="unloadProcedure();"> Main menu </button>
+</div>
+
+
+
+<canvas style="background:#0a0;" id="cv" width="800" height="600" onclick="canvasClick(event);"></canvas>
+</div>
+</body>
+
+<script src="./js/util.js"></script>
+<script src="./js/stack.js"></script>
+<script src="./js/cardRenderer.js"></script>
+<script src="./js/sprite.js"></script>
+<script src="./js/rng.js"></script>
+<script src="./js/ui.js"></script>
+<script src="./js/basegameclass.js"></script>
+<script src="gameList/freecell.js" async="true" defer></script>
+<script src="gameList/klondike.js" async="true" defer></script>
+<script src="gameList/spider.js" async="true" defer></script>
+<script type="text/javascript">
+
+
+
+
+let ctx = cv.getContext("2d");
+let W = cv.width = 1024;
+let H = cv.height = 768;
+ctx.lineWidth = 4;
+let spr = new Sprite(13,5);
+let game;
+let rng;
+
+
+window.onload = function(){
+	globalArrOfGameList.sort((a,b)=>{
+		if(a.gameId > b.gameId){
+			return 1;
+		}
+		if(a.gameId < b.gameId){
+			return -1;
+		}
+		return 0;
+	});
+	uiDraw();
+}
+function screenSelection(index){
+	let elementOfScreen = document.getElementsByClassName("screenClass");
+	for(let i of elementOfScreen){
+		i.style.display = "none";
+	}
+	elementOfScreen[index].style.display = "block";
+
+}
+
+function canvasClick(ev){
+
+	let bound = cv.getBoundingClientRect();
+	let x = ev.pageX - Math.round(bound.left) - Math.round(window.pageXOffset);
+	let y = ev.pageY - Math.round(bound.top) - Math.round(window.pageYOffset);
+	if(game){
+		game.click(spr,x/W,y/H);
+		game.render(ctx,spr);
+	
+	}
+	
+}
+function uiDraw(){
+	function createButton(text){
+		let btn = document.createElement("button");
+		btn.className = "itemSelector borderRound bgTheme3";
+		btn.innerHTML = text;
+		return btn;
+	}
+
+	domListElement.innerHTML = "";
+	for(let i in globalArrOfGameList){
+		let btn = createButton(globalArrOfGameList[i].displayName);
+		btn.onclick = function(){
+			globalIndexSelector = i;
+			let ui = globalArrOfGameList[i].showUi();
+			ui.display(gameSetting);
+			globalUI = ui;
+			dom_game_title.innerHTML = globalArrOfGameList[i].displayName;
+			domNewGameBtn.disabled = false;
+		}
+		domListElement.appendChild(btn);
+	}
+
+}
+function unloadProcedure(){
+	if( confirm("Are you want to exit ?") ){
+		game = undefined;
+		screenSelection(0);
+	}
+	
+
+}
+async function loadProcedure(){
+	let aload = spr.loadImage("./img/cardDeck.png");
+	screenSelection(1);
+	rng = new RNG(Math.floor(Math.random() * 2**31));
+
+	
+	game = new globalArrOfGameList[globalIndexSelector](W,H,globalUI.getValues());
+	game.generate(rng);
+	await aload;
+	
+	game.render(ctx,spr);
+	
+}
+
+
+
+</script>
+</html>
